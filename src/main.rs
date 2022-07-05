@@ -17,6 +17,7 @@ use termion::{terminal_size, color, style};
 
 
 mod task;
+mod parser;
 
 fn type_of<T>(_: T) -> String{
     let a = std::any::type_name::<T>();
@@ -142,7 +143,7 @@ impl App {
         for (i, t) in self.tasks.iter().enumerate() {
             write!(self.stdout, "{}{}",
                 termion::cursor::Goto(1, (i + 1) as u16),
-                t.name
+                t.subject
             ).unwrap();
         }
     }
@@ -171,4 +172,6 @@ fn main() {
 
     // let hoge = task::Task::new("due:2022-08-01");
     // println!("{:?}", hoge.due);
+
+    parser::parse("x (A) 2022-03-04 2022-03-05 subject here @context +project due:2022-04-05");
 }

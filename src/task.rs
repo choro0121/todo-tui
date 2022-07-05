@@ -8,7 +8,7 @@ pub struct Task {
     //   (A) 2022-01-02            due:2022-03-07 @context1 @context2 +project "hoge fuga piyo"
     // x (A) 2022-03-04 2022-01-02 due:2022-03-07 @context1 @context2 +project "hoge fuga piyo"
     pub done: bool,
-    pub name: String,
+    pub subject: String,
     pub priority: Option<char>,
     pub project: Option<String>,
     pub context: Vec<String>,
@@ -28,7 +28,7 @@ fn regex_done(txt: &str) -> bool {
     }
 }
 
-fn regex_name(txt: &str) -> String {
+fn regex_subject(txt: &str) -> String {
     lazy_static! {
         static ref RE: Regex = Regex::new(r#"(?:\s|^)"(.*)""#).unwrap();
     }
@@ -94,20 +94,6 @@ fn regex_date(txt: &str) -> [Option<NaiveDate>; 2] {
 
 fn regex_due(txt: &str) -> Option<NaiveDate> {
     lazy_static! {
-        static ref RE: Regex = Regex::new(r"(?:\s|^)due:(\d{4}-\d{2}-\d{2})").unwrap();
-    }
-
-    match RE.captures(txt) {
-        Some(cap) => {
-            let date_str = cap.get(1).unwrap().as_str();
-            Some(NaiveDate::parse_from_str(date_str, "%Y-%m-%d").unwrap())
-        },
-        None => None,
-    }
-}
-
-fn regex_due_keyword(txt: &str) -> Option<NaiveDate> {
-    lazy_static! {
         static ref RE: Regex = Regex::new(r"(?:\s|^)due:(yesterday|today|tomorrow|weekend|\d{4}-\d{2}-\d{2})").unwrap();
     }
 
@@ -150,11 +136,10 @@ fn parse_date(done: bool, date: [Option<NaiveDate>; 2]) -> (Option<NaiveDate>, O
     }
 }
 
-
 impl Task {
     pub fn from_string(txt: &str) -> Self {
         let done = regex_done(txt);
-        let name = regex_name(txt);
+        let subject = regex_subject(txt);
         let priority = regex_priority(txt);
         let project = regex_project(txt);
         let context = regex_context(txt);
@@ -164,7 +149,7 @@ impl Task {
 
         Self {
             done,
-            name,
+            subject,
             priority,
             project,
             context,
@@ -175,15 +160,15 @@ impl Task {
     }
 
     pub fn new(txt: &str) -> Self {
-        let name = regex_name(txt);
+        let subject = regex_subject(txt);
         let priority = regex_priority(txt);
         let project = regex_project(txt);
         let context = regex_context(txt);
-        let due = regex_due_keyword(txt);
+        let due = regex_due(txt);
 
         Self {
             done: false,
-            name,
+            subject,
             priority,
             project,
             context,
